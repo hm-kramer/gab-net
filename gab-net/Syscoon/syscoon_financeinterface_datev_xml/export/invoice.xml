@@ -1,0 +1,91 @@
+{% macro _if(attr, value, condition=None) -%}
+  {% if (not is_bool(condition) or condition == True) and value or is_int(value) and not is_bool(value) %}
+    {{ attr }}="{{ value }}"
+  {% endif %}
+{%- endmacro %}
+<invoice generator_info="Odoo V12"
+         generating_system="Odoo-ERP Software"
+         description="DATEV Import invoices"
+         version="3.0"
+         xml_data="Kopie nur zur Verbuchung berechtigt nicht zum Vorsteuerabzug"
+         xsi:schemaLocation="http://xml.datev.de/bedi/tps/invoice/v030 Belegverwaltung_online_invoice_v030.xsd"
+         xmlns="http://xml.datev.de/bedi/tps/invoice/v030" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <invoice_info {{ _if('invoice_type', inv_type) }}
+                  {{ _if('invoice_date', inv.date_invoice) }}
+                  {{ _if('delivery_date', delivery_date) }}
+                  invoice_id="{{ inv_number[0:12] }}"
+                  />
+    <invoice_party {{ _if('vat_id', customer.vat) }}>
+        <address {{ _if('party_id', customer.ref) }}
+                 {{ _if('street', customer.street and customer.street[0:40] or 'ohne Straße') }}
+                 {{ _if('zip', customer.zip and customer.zip[0:10]) }}
+                 {{ _if('city', customer.city and customer.city[0:30] or 'ohne Stadt') }}
+                 {{ _if('name', customer.name and customer.name[0:50] or 'ohne Name') }}
+                 {{ _if('country', customer.country_id.code) }}
+                 {{ _if('phone', customer.phone) }}
+                 />
+        {% if (customer.customer) %}
+        <booking_info_bp {{ _if('bp_account_no', bp_account_no) }}/>
+        {% endif %}
+    </invoice_party>
+    <supplier_party {{ _if('vat_id', supplier.vat_id) }}>
+        <address {{ _if('party_id', supplier.ref) }}
+                 {{ _if('street', supplier.street and supplier.street[0:40] or 'ohne Straße') }}
+                 {{ _if('zip', supplier.zip and supplier.zip[0:10] or '00000') }}
+                 {{ _if('city', supplier.city and supplier.city[0:30] or 'ohne Stadt') }}
+                 {{ _if('name', supplier.name and supplier.name[0:50] or 'ohne Name') }}
+                 {{ _if('country', supplier.country_id.code) }}
+                 {{ _if('phone', supplier.phone) }}
+                 />
+        {% if (supplier.supplier) %}
+        <booking_info_bp {{ _if('bp_account_no', bp_account_no) }}/>
+        {% endif %}
+
+    </supplier_party>
+    <payment_conditions {{ _if('currency', inv.currency_id.name) }}
+                      {{ _if('due_date', inv.date_due) }}
+                      {{ _if('payment_conditions_text', inv.payment_term_id and inv.payment_term_id.name[0:60] or 'Keine Zahlungsbedingungen') }}
+                      />
+    {% for l in inv.invoice_line_ids.mapped(make_DATEVInvLine) %}
+    {% if l.gross_price_line_amount %}
+    <invoice_item_list {{ _if('order_unit', l.order_unit) }}
+                       {{ _if('gross_product_price', l.gross_product_price) }}
+                       {{ _if('net_product_price', l.net_product_price) }}
+                       {{ _if('product_id', l.product_id) }}
+                       {{ _if('quantity', l.quantity) }}
+                       {{ _if('description_short', l.description_short[0:40]) }}
+                       >
+        <price_line_amount {{ _if('gross_price_line_amount', l.gross_price_line_amount) }}
+                           {{ _if('tax', l.tax and l.tax or '0.00') }}
+                           {{ _if('net_price_line_amount', l.net_price_line_amount) }}
+                           {{ _if('tax_amount', l.tax_amount) }}
+                           />
+        <accounting_info {{ _if('account_no', l.account_no) }}
+                         {{ _if('bu_code', l.bu_code) }}
+                         {{ _if('booking_text', l.booking_text[0:60]) }}
+                         {{ _if('cost_category_id', l.cost_category_id) }}
+                         />
+    </invoice_item_list>
+    {% endif %}
+    {% endfor %}
+    <total_amount {{ _if('net_total_amount', inv_amount_net) }}
+                  {{ _if('total_gross_amount_excluding_third-party_collection', inv_amount_total) }}
+                  {{ _if('currency', inv_currency) }}
+                  >
+        {% for tl in inv.tax_line_ids.mapped(make_DATEVTaxLine) %}
+        <tax_line {{ _if('currency', tl and tl.currency or '') }}
+                  {{ _if('gross_price_line_amount', tl and tl.gross_price_line_amount or inv_amount_total) }}
+                  {{ _if('tax', tl.tax and tl.tax or '0.00') }}
+                  {{ _if('net_price_line_amount', tl and tl.net_price_line_amount or inv_amount_total) }}
+                  {{ _if('tax_amount', tl.tax_amount) }}
+                  />
+        {% endfor %}
+        {% if not inv.tax_line_ids %}
+        <tax_line {{ _if('currency', inv_currency) }}
+                  {{ _if('gross_price_line_amount', inv_amount_total) }}
+                  {{ _if('tax', '0.00') }}
+                  {{ _if('net_price_line_amount', inv_amount_total) }}
+                  />
+        {% endif %}
+    </total_amount>
+</invoice>

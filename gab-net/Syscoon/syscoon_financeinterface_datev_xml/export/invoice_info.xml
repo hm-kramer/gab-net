@@ -1,0 +1,23 @@
+<archive version="3.0"
+         generatingSystem="Odoo V11"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xml.datev.de/bedi/tps/document/v030 document_v030.xsd"
+         xmlns="http://xml.datev.de/bedi/tps/document/v03.0">
+  <header>
+    <date>{{ timestamp }}</date>
+    <description>Rechnungen aus Odoo</description>
+    <consultantNumber>{{ consultant_number or '' }}</consultantNumber>
+    <clientNumber>{{ client_number or '' }}</clientNumber>
+  </header>
+  <content>
+  {% for doc in docs %}
+  <document>
+    <description>{{ doc.inv_name }}</description>
+    <extension xsi:type="Invoice" datafile="{{ doc.xml_path }}">
+      <property key="InvoiceType" value="{{ doc.type }}"/>
+    </extension>
+    <extension xsi:type="File" name="{{ doc.pdf_path }}"/>
+  </document>
+  {% endfor %}
+  </content>
+</archive>
