@@ -264,6 +264,11 @@ class ecofi(models.Model):
                     continue
                 datevkonto = move.ecofi_account_counterpart.code
                 datevgegenkonto = ustr(line.account_id.code)
+                if self.env.user.company_id.remove_leading_zeros:
+                    if datevkonto[0] == '0':
+                        datevkonto = datevkonto[1:]
+                    if datevgegenkonto[0] == '0':
+                        datevgegenkonto = datevgegenkonto[1:]
                 if datevgegenkonto == datevkonto:
                     continue
                 if line.date_maturity:
