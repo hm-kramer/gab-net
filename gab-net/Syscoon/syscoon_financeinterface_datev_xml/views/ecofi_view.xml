@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<record id="eco_ecofi_tree_view_datev_xml" model="ir.ui.view">
+    <field name="name">ecofi.tree.datev.xml</field>
+    <field name="model">ecofi</field>
+    <field name="type">tree</field>
+    <field name="inherit_id" ref="syscoon_financeinterface.eco_ecofi_tree_view"/>
+    <field name="arch" type="xml">
+        <xpath expr="//field[@name='account_moves']" position="after">
+            <field name="account_invoices"/>
+        </xpath>
+    </field>
+</record>
+
+<record id="eco_ecofi_form_view_datev_xml" model="ir.ui.view">
+    <field name="name">ecofi.form.datev.xml</field>
+    <field name="model">ecofi</field>
+    <field name="type">form</field>
+    <field name="inherit_id" ref="syscoon_financeinterface.eco_ecofi_form_view"/>
+    <field name="arch" type="xml">
+        <xpath expr="//field[@name='zeitraum']" position="after">
+            <field colspan="4" name="export_mode_xml" invisible="1"/>
+        </xpath>
+        <xpath expr="//field[@name='journale']" position="replace">
+            <field colspan="4" name="journale" attrs="{'invisible': [('export_mode_xml', '=', True)]}"/>
+        </xpath>
+        <xpath expr="//field[@name='account_moves']" position="replace">
+            <field colspan="4" name="account_moves" attrs="{'invisible': [('export_mode_xml', '=', True)]}"/>
+            <field colspan="4" name="account_invoices" attrs="{'invisible': [('export_mode_xml', '=', False)]}"/>
+            <field colspan="4" name="invoice_error_ids" attrs="{'invisible': [('export_mode_xml', '=', False)]}"/>
+        </xpath>
+    </field>
+</record>
+
+</odoo>
