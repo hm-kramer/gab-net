@@ -8,9 +8,9 @@ class ecofi(models.Model):
     _inherit = 'ecofi'
     
     @api.multi
-    def field_config(self, move, line, errorcount, partnererror, thislog, thismovename, faelligkeit, datevdict, belegdatum_format=False):
+    def field_config(self, move, line, errorcount, partnererror, thislog, thismovename, faelligkeit, datevdict, kost1, kost2):
         
-        errorcount, partnererror, thislog, thismovename, datevdict, group = super(ecofi, self).field_config(move, line, errorcount, partnererror, thislog, thismovename, faelligkeit, datevdict, belegdatum_format)
+        errorcount, partnererror, thislog, thismovename, datevdict, group, kost1, kost2 = super(ecofi, self).field_config(move, line, errorcount, partnererror, thislog, thismovename, faelligkeit, datevdict, kost1, kost2)
 
         if line.invoice_id:
             inv_lines = self.env['account.invoice.line'].search([('invoice_id', '=', line.invoice_id.id)])
@@ -23,4 +23,4 @@ class ecofi(models.Model):
             if sale_ids and len(sale_ids) == 1:
                 datevdict['Auftragsnummer'] = ustr(sale_ids[0].payment_tx_id.acquirer_reference)
         
-        return errorcount, partnererror, thislog, thismovename, datevdict, group
+        return errorcount, partnererror, thislog, thismovename, datevdict, group, kost1, kost2

@@ -39,7 +39,7 @@ class ecofi(models.Model):
         return True
 
     @api.multi
-    def field_config(self, move, line, errorcount, partnererror, thislog, thismovename, faelligkeit, datevdict):
+    def field_config(self, move, line, errorcount, partnererror, thislog, thismovename, faelligkeit, datevdict, kost1, kost2):
         """ Method that generates gets the values for the different Datev columns.
         :param move: account_move
         :param line: account_move_line
@@ -104,7 +104,7 @@ class ecofi(models.Model):
                         errorcount += 1
                         partnererror.append(move.partner_id.id)
                         thislog = thislog + thismovename + _(u'Error: No sales tax identification number stored in the partner!') + '\n'
-        return errorcount, partnererror, thislog, thismovename, datevdict, group
+        return errorcount, partnererror, thislog, thismovename, datevdict, group, kost1, kost2
 
     @api.multi
     def format_umsatz(self, lineumsatz):
@@ -260,19 +260,15 @@ class ecofi(models.Model):
             faelligkeit = False
             grouped_lines = []
             for line in move.line_ids:
+                kost1 = kost2 = ''
                 if line.debit == 0 and line.credit == 0:
                     continue
                 datevkonto = move.ecofi_account_counterpart.code
                 datevgegenkonto = ustr(line.account_id.code)
-                if self.env.user.company_id.remove_leading_zeros:
-                    if datevkonto[0] == '0':
-                        datevkonto = datevkonto[1:]
-                    if datevgegenkonto[0] == '0':
-                        datevgegenkonto = datevgegenkonto[1:]
                 if datevgegenkonto == datevkonto:
                     continue
-                if line.date_maturity:
-                    faelligkeit = line.date_maturity.strftime('%d%m%y')
+                if line.invoice_id:
+                    faelligkeit = line.invoice_id.date_due.strftime('%d%m%y')
                 lineumsatz = Decimal(str(0))
                 lineumsatz += Decimal(str(line.debit))
                 lineumsatz -= Decimal(str(line.credit))
@@ -422,17 +418,15 @@ class ecofi(models.Model):
                     'Steuersatz': '',
                     'Land': '',
                 }
-                (errorcount, partnererror, thislog, thismovename, datevdict, group) = \
-                    self.field_config(move, line, errorcount, partnererror, thislog,
-                    thismovename, faelligkeit, datevline)
+                (errorcount, partnererror, thislog, thismovename, datevdict, group, kost1, kost2) = \
+                    self.field_config(move, line, errorcount, partnererror, thislog, thismovename, faelligkeit, datevline, kost1, kost2)
 
                 if group:
-                    if not any(gl['Konto'] == datevkonto and gl['Gegenkonto (ohne BU-Schlüssel)'] == datevgegenkonto and gl['BU-Schlüssel'] == buschluessel
-                        and gl['Soll/Haben-Kennzeichen'] == sollhaben and gl['WKZ Umsatz'] == wkzumsatz for gl in grouped_lines):
-                        grouped_lines.append(datevline)
+                    if not any(gl['Konto'] == datevkonto and gl['Gegenkonto (ohne BU-Schlüssel)'] == datevgegenkonto and gl['BU-Schlüssel'] == buschluessel and gl['Soll/Haben-Kennzeichen'] == sollhaben and gl['WKZ Umsatz'] == wkzumsatz and gl['KOST1 - Kostenstelle'] == kost1 and gl['KOST2 - Kostenstelle'] == kost2 for gl in grouped_lines):
+                            grouped_lines.append(datevline)
                     else:
                         for gl in grouped_lines:
-                            if gl['Konto'] == datevkonto and gl['Gegenkonto (ohne BU-Schlüssel)'] == datevgegenkonto and gl['BU-Schlüssel'] == buschluessel and gl['Soll/Haben-Kennzeichen'] == sollhaben:
+                            if gl['Konto'] == datevkonto and gl['Gegenkonto (ohne BU-Schlüssel)'] == datevgegenkonto and gl['BU-Schlüssel'] == buschluessel and gl['Soll/Haben-Kennzeichen'] == sollhaben and gl['KOST1 - Kostenstelle'] == kost1 and gl['KOST2 - Kostenstelle'] == kost2:
                                 if gl['Basis-Umsatz'] and basisumsatz:
                                     gl['Basis-Umsatz'] = str(float(gl['Basis-Umsatz'].replace(',', '.')) + float(basisumsatz.replace(',', '.'))).replace('.', ',')
                                 if gl['Umsatz (ohne Soll/Haben-Kz)'] and umsatz:
