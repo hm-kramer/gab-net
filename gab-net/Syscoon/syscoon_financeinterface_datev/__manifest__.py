@@ -4,7 +4,7 @@
 
 {
     'name': 'Finanzinterface - Datev ASCII Export',
-    'version': '12.0.2.0.11',
+    'version': '12.0.2.0.13',
     'author': 'ecoservice, syscoon GmbH',
     'license': 'OPL-1',
     'website': 'https://syscoon.com',

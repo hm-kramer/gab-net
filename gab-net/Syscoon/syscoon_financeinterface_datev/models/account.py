@@ -43,7 +43,10 @@ class AccountMove(models.Model):
 
     @api.model
     def _check_if_enabled(self):
-        if self.env.user.company_id.enable_datev_checks:
+        if (
+            'enable_datev_checks' in self.env.user.company_id._fields
+            and self.env.user.company_id.enable_datev_checks
+        ):
             return True
         else:
             return False

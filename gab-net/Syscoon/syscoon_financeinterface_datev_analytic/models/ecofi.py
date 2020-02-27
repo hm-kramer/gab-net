@@ -8,8 +8,12 @@ class ecofi(models.Model):
     _inherit = 'ecofi'
 
     @api.multi
-    def field_config(self, move, line, errorcount, partnererror, thislog, thismovename, faelligkeit, datevdict):
-        datevdict['KOST1 - Kostenstelle'] = line.analytic_account_id.code
-        datevdict['KOST2 - Kostenstelle'] = line.analytic_tag_ids[0].name
-        res = super(ecofi, self).field_config(move, line, errorcount, partnererror, thislog, thismovename, faelligkeit, datevdict)
+    def field_config(self, move, line, errorcount, partnererror, thislog, thismovename, faelligkeit, datevdict, kost1, kost2):
+        if line.analytic_account_id:
+            kost1 = line.analytic_account_id.code
+            datevdict['KOST1 - Kostenstelle'] = kost1
+        if line.analytic_tag_ids:
+            kost2 = line.analytic_tag_ids[0].name
+            datevdict['KOST2 - Kostenstelle'] = kost2
+        res = super(ecofi, self).field_config(move, line, errorcount, partnererror, thislog, thismovename, faelligkeit, datevdict, kost1, kost2)
         return res

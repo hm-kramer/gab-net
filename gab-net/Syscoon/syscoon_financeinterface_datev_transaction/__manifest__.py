@@ -3,7 +3,7 @@
 
 {
     'name': 'Finanzinterface - Datev Export - Transaction',
-    'version': '12.1.0.0.0',
+    'version': '12.0.1.0.2',
     'depends': [
         'syscoon_financeinterface'
     ],
