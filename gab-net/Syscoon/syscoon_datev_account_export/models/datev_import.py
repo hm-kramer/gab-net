@@ -31,6 +31,7 @@ from odoo import api, fields, models, _
 
 class DatevImport(models.TransientModel):
     _name = 'datev.import'
+    _description = 'DATEV Account Import'
 
     name = fields.Char('File Name', readonly=True)
     data = fields.Binary('File', readonly=False)
