@@ -41,17 +41,17 @@ class AccountPaymentTerm(models.Model):
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    #@api.model
-    #def _check_if_enabled(self):
-    #    if (
-    #        'enable_datev_checks' in self.env.user.company_id._fields
-    #        and self.env.user.company_id.enable_datev_checks
-    #    ):
-    #        return True
-    #    else:
-    #        return False
+    @api.model
+    def _check_if_enabled(self):
+        if (
+            'enable_datev_checks' in self.env.user.company_id._fields
+            and self.env.user.company_id.enable_datev_checks
+        ):
+            return True
+        else:
+            return False
 
-    #enable_datev_checks = fields.Boolean('Perform Datev Checks', default=lambda self: self._check_if_enabled())
+    enable_datev_checks = fields.Boolean('Perform Datev Checks', default=lambda self: self._check_if_enabled())
 
     @api.multi
     def datev_account_checks(self, move):
